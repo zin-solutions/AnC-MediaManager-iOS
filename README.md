@@ -1,3 +1,3 @@
-# VLMediaManager
+# ACMediaManager
 
 Media Caching Provider
