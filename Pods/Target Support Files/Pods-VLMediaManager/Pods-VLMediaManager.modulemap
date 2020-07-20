@@ -1,6 +1,0 @@
-framework module Pods_VLMediaManager {
-  umbrella header "Pods-VLMediaManager-umbrella.h"
-
-  export *
-  module * { export * }
-}

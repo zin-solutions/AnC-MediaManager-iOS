@@ -1,14 +1,21 @@
 # Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+ platform :ios, '13.5'
 
-target 'VLMediaManager' do
+target 'ACMediaManager' do
   # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
 
-  # Pods for VLMediaManager
-  pod 'Nuke', '~> 8.0'
-  pod 'ObjectBox'
-  pod 'SwifterSwift'
+  # Pods for ACMediaManager
   pod 'Schedule', '~> 2.0'
+end
 
+target 'ACMediaManagerTests' do
+  use_frameworks!
+  # Pods for testing
+end
+
+target 'ACMediaManagerExample' do
+  use_frameworks!
+  # Pods for example app
+  pod 'ACMediaManager', :path => '.'
 end
