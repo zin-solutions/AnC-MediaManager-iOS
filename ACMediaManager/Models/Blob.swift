@@ -20,7 +20,7 @@ public class Blob: Decodable{
     /// -------------
     
     
-    init(id:String, contentType:String, url:URL) {
+    public init(id:String, contentType:String, url:URL) {
         self.id = id
         self.contentType = contentType
         self.url = url

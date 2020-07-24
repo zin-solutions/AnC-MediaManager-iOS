@@ -20,7 +20,7 @@ public class MediaFragment: NSManagedObject {
     
     public init (mediaKey: String, offset: Int64, length: Int64, key: String, context: NSManagedObjectContext){
         
-        let mediaFragmentEntityDescription = NSEntityDescription.entity(forEntityName: "Media", in: context)!
+        let mediaFragmentEntityDescription = NSEntityDescription.entity(forEntityName: "MediaFragment", in: context)!
         super.init(entity: mediaFragmentEntityDescription, insertInto: context)
         
         self.offset = offset
@@ -30,13 +30,18 @@ public class MediaFragment: NSManagedObject {
     }
     public init (mediaKey: String, offset: Int64, length: Int64, context: NSManagedObjectContext){
         
-        let mediaFragmentEntityDescription = NSEntityDescription.entity(forEntityName: "Media", in: context)!
+        let mediaFragmentEntityDescription = NSEntityDescription.entity(forEntityName: "MediaFragment", in: context)!
         super.init(entity: mediaFragmentEntityDescription, insertInto: context)
         
         self.offset = offset
         self.length = length
         self.key = UUID().uuidString
         self.mediaKey = mediaKey
+    }
+    
+    @objc
+    private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
     }
     
     func debugDescription()->String {

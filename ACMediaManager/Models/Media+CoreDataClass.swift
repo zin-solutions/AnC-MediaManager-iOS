@@ -21,6 +21,11 @@ public class Media: NSManagedObject {
         self.key = key
     }
     
+    @objc
+    private override init(entity: NSEntityDescription, insertInto context: NSManagedObjectContext?) {
+        super.init(entity: entity, insertInto: context)
+    }
+    
     class func fetch(findByKey key: String, context: NSManagedObjectContext) -> Media? {
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Media")
 

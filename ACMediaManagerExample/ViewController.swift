@@ -70,9 +70,8 @@ class ViewController: UIViewController {
                         let data = reqJSONStr?.data(using: .utf8)
                         
                         print("decoding: " + (blobMap["id"]! as! String))
-                        let blob = try JSONDecoder().decode(Blob.self, from: data!)
-                        blob.url = BlobUtils.getVideoUrl(blob: blob)!
-                        self.blobs.append(blob)
+                        let blob = try JSONDecoder().decode(OnlineBlob.self, from: data!)
+                        self.blobs.append(blob.toNormalBlob())
                     }
                     self.preheatAllBlobs()
                 }

@@ -21,6 +21,7 @@
 		3D00705524BF61FB00B6CCB3 /* DateUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D00705424BF61FB00B6CCB3 /* DateUtils.swift */; platformFilter = ios; };
 		3D451E0324C630730064A809 /* BlobUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2789724BF11AD008833A4 /* BlobUtils.swift */; };
 		3D451E0424C630730064A809 /* URL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DB2789B24BF11AE008833A4 /* URL.swift */; };
+		3D4CE0A124CB15A000E08942 /* OnlineBlob.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D4CE0A024CB15A000E08942 /* OnlineBlob.swift */; };
 		3D86A49424BF0BF80083A717 /* ACMediaManager.h in Headers */ = {isa = PBXBuildFile; fileRef = 3D86A49224BF0BF80083A717 /* ACMediaManager.h */; platformFilter = ios; settings = {ATTRIBUTES = (Public, ); }; };
 		3D86A4A324BF0C780083A717 /* ACMediaManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D86A4A224BF0C780083A717 /* ACMediaManagerTests.swift */; };
 		3D86A4A524BF0C780083A717 /* ACMediaManager.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D86A48F24BF0BF80083A717 /* ACMediaManager.framework */; };
@@ -77,6 +78,7 @@
 		3D00704E24BF37D900B6CCB3 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		3D00705024BF37D900B6CCB3 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3D00705424BF61FB00B6CCB3 /* DateUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateUtils.swift; sourceTree = "<group>"; };
+		3D4CE0A024CB15A000E08942 /* OnlineBlob.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnlineBlob.swift; sourceTree = "<group>"; };
 		3D86A48F24BF0BF80083A717 /* ACMediaManager.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = ACMediaManager.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D86A49224BF0BF80083A717 /* ACMediaManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ACMediaManager.h; sourceTree = "<group>"; };
 		3D86A49324BF0BF80083A717 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -145,6 +147,7 @@
 		3D00703E24BF37D800B6CCB3 /* ACMediaManagerExample */ = {
 			isa = PBXGroup;
 			children = (
+				3D4CE09F24CB157900E08942 /* Models */,
 				3D451E0224C625380064A809 /* Utils */,
 				3D451E0124C623C70064A809 /* Constants */,
 				3D00703F24BF37D800B6CCB3 /* AppDelegate.swift */,
@@ -172,6 +175,14 @@
 				3DB2789724BF11AD008833A4 /* BlobUtils.swift */,
 			);
 			path = Utils;
+			sourceTree = "<group>";
+		};
+		3D4CE09F24CB157900E08942 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				3D4CE0A024CB15A000E08942 /* OnlineBlob.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		3D86A48524BF0BF80083A717 = {
@@ -561,6 +572,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				3D451E0324C630730064A809 /* BlobUtils.swift in Sources */,
+				3D4CE0A124CB15A000E08942 /* OnlineBlob.swift in Sources */,
 				3D451E0424C630730064A809 /* URL.swift in Sources */,
 				3D00704424BF37D800B6CCB3 /* ViewController.swift in Sources */,
 				3D00704024BF37D800B6CCB3 /* AppDelegate.swift in Sources */,
