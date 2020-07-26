@@ -14,7 +14,6 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        login()
     }
     
     func login(){
@@ -48,6 +47,7 @@ class ViewController: UIViewController {
     }
     
     func getTestData(accessToken:String){
+        blobs.removeAll()
         let url = URL(string: baseUrl + "post/findByUser?username=mikebrown&offset=0&max=20")!
         
         var request = URLRequest(url: url)
@@ -104,6 +104,14 @@ class ViewController: UIViewController {
         //            let responseString = String(data: data, encoding: .utf8)!
         let responseData = data
         return responseData
+    }
+    
+    @IBAction func didTapGetData(_ sender: Any) {
+        login()
+    }
+    
+    @IBAction func didTapClearCache(_ sender: Any) {
+        PreheatingManager.shared.clearCache()
     }
     
     

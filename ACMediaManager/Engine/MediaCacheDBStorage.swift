@@ -7,62 +7,9 @@
 //
 
 import Foundation
-//import ObjectBox
-//import SwifterSwift
-//import Schedule
 import CoreData
 
-// objectbox:Entity
-//class MediaDA{
-//
-//    var id: Id = 0 // An ID is required by ObjectBox
-//
-//    // objectbox: unique
-//    var key: String
-//
-//    // objectbox: index
-//    var createdOn: Date = Date()
-//
-//    var mimeType: String?
-//
-//    var contentLength: Int64?
-//
-//    // objectbox: backlink = "media"
-//    var fragments: ToMany<MediaFragmentDA> = nil
-//
-//    required init (){
-//        self.key = ""
-//    }
-//    convenience init(key: String) {
-//        self.init()
-//        self.key = key
-//    }
-//}
-// objectbox:Entity
-//class MediaFragmentDA {
-//    var id: Id = 0
-//
-//    var offset: Int64
-//    var length: Int64
-//
-//    // objectbox: index
-//    var key: String
-//
-//    var media: ToOne<MediaDA> = nil
-//
-//    required init(){
-//        offset = 0
-//        length = 0
-//        key = ""
-//    }
-//
-//    convenience init (key: String, offset: Int64, length: Int64){
-//        self.init()
-//        self.key = key
-//        self.offset = offset
-//        self.length = length
-//    }
-//}
+
 class MediaCacheDBStorage {
     static let MAX_CACHE_SIZE = 500 * 1024 * 1024
     
@@ -75,37 +22,36 @@ class MediaCacheDBStorage {
         shared = MediaCacheDBStorage()
     }
     
-    //    let writeQueue = DispatchQueue.init(label: "dbWriteQueue", qos: .background)
-    
-    //    var task: Task?
-    //    let dispatchQueue = DispatchQueue(label: "LocalDbManager")
-    
     let persistentStoreCoordinator:NSPersistentStoreCoordinator
     let mediaManagerManagedObjectModel:NSManagedObjectModel
     let context:NSManagedObjectContext
     
     
     public func findMedia (mediaKey: String, autoCreate: Bool = false) -> Media?{
-        print("findMedia")
+        print("Fetch media \(mediaKey)")
         var media = Media.fetch(findByKey: mediaKey, context: context)
-        if !autoCreate || media != nil{
+        if media != nil{
+            print("Found media \(mediaKey)")
             return media
         }
+        print("Did not find media \(mediaKey)")
         
-        print("findMedia -- writeQueue")
-        media = Media.fetch(findByKey: mediaKey, context: context)
-        if media == nil{
-            media = Media(key: mediaKey, context: context)
-            try? context.save()
+        if !autoCreate{
+            return nil
         }
+        
+        print("Creating media \(mediaKey)")
+        media = Media(key: mediaKey, context: context)
+        try? context.save()
         
         return media
     }
     
     public func addFragment (mediaKey: String, offset: Int64, data: Data){
-        print("addFragment")
+        print("Adding fragment to media \(mediaKey)")
         
         guard let media = findMedia(mediaKey: mediaKey, autoCreate: true) else{
+            print("Error - Couldn't find media")
             return
         }
         print("addFragment -- writeQueue")
@@ -114,18 +60,22 @@ class MediaCacheDBStorage {
         let fragment = MediaFragment(mediaKey: key, offset: offset, length: Int64(data.count), context: context)
         
         do{
+            print("Saving fragment for media \(mediaKey)")
             fragment.media = media
             try context.save()
         }
         catch{
+            print("Error - Saving fragment for media \(mediaKey)")
             return
         }
         do{
+            print("Storing fragment in file for media \(mediaKey)")
             let url = self.cacheDirectory.appendingPathComponent(mediaKey, isDirectory: true).appendingPathComponent(fragment.key)
             _ = self.fileManager.createSubdirectory(mediaKey, atUrl: self.cacheDirectory)
             try data.write(to: url)
         }
         catch{
+            print("Error - Storing fragment in file for media \(mediaKey)")
             context.delete(fragment)
             try? context.save()
         }
@@ -134,23 +84,26 @@ class MediaCacheDBStorage {
         let url = self.cacheDirectory.appendingPathComponent(fragment.mediaKey!, isDirectory: true).appendingPathComponent(fragment.key)
         return try? Data(contentsOf: url)
     }
+    
     public func findMediaDto(key: String, autoCreate: Bool = false) -> Media? {
-        var result: Media?
+        print("Fetching media DTO for \(key) - AutoCreate \(autoCreate)")
         if let media = self.findMedia(mediaKey: key, autoCreate: autoCreate) {
-            result = Media(key: key, context: context)
-            result?.contentLength = media.contentLength
-            result?.mimeType = media.mimeType
+            print("Getting media fragments for media \(media.key)")
             let mediaFragments: [MediaFragment] = (media.mediaFragments?.toArray())!
+            print("Found \(mediaFragments.count) media fragments")
+            print("Filling \(mediaFragments.count) media fragments to media's info")
             mediaFragments.forEach{fragment in
-                let f = MediaFragment(mediaKey: key, offset: fragment.offset, length: fragment.length, key: fragment.key, context: context)
-                result?.addInfo(info: f)
+                media.addInfo(info: fragment)
             }
+            return media
         }
-        return result
+        return nil
     }
+    
     public func setMediaInfo (mediaKey: String, contentLength: Int64, mimeType: String?){
         
         guard let media = self.findMedia(mediaKey: mediaKey, autoCreate: true) else {
+            print("No need to set media info")
             return
         }
         
@@ -171,15 +124,7 @@ class MediaCacheDBStorage {
 //        }
     }
     private init(){
-        //        self.context = context
-        // The managed object model for the application. This property is not optional. It is a fatal error for the application not to be able to find and load its model.
-        //        let mediaManagerBundle = Bundle(identifier: "com.artsncode.ACMediaManager")
-        //
-        //        let modelURL = mediaManagerBundle!.url(forResource: "MediaManagerDataModel", withExtension: "momd", subdirectory: "Engine")!
-        
-        //        let managedObjectModel = NSManagedObjectModel(contentsOf: modelURL)!
-        //        let container = NSPersistentContainer(name: "MyFramework", managedObjectModel: managedObjectModel)
-        
+
         guard let modelURL = Bundle(for: type(of: self)).url(forResource: "MediaManagerDataModel", withExtension: "momd") else {
             fatalError("Failed to find data model")
         }
@@ -201,26 +146,18 @@ class MediaCacheDBStorage {
         
         self.mediaManagerManagedObjectModel = NSManagedObjectModel(contentsOf: modelURL)!
         
-        //        let dbFile = (fileManager.documentsDirectory()?.appendingPathComponent("VLMediaCacheManagerDB"))!
-        //        store = try! Store(directoryPath: dbFile.path, maxDbSizeInKByte: 100_000)
-        cacheDirectory = (fileManager.documentsDirectory()?.appendingPathComponent("VLMediaCacheManager"))!
+        cacheDirectory = (fileManager.documentsDirectory()?.appendingPathComponent("ACMediaCacheManager"))!
         
-        self.context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
+        self.context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
         context.persistentStoreCoordinator = self.persistentStoreCoordinator
-        
-        //        self.task = Plan.every(10.minutes).do(queue: dispatchQueue, action:{
-        //            self.checkLimit()
-        //        }
-        //        )
     }
     private func delete (media: Media) {
         let url = self.cacheDirectory.appendingPathComponent(media.key, isDirectory: true)
         if fileManager.removeDirectory(url){
             print ("Directory \(url.description) deleted")
-            
-            context.delete(media)
-            try? context.save()
         }
+        context.delete(media)
+        try? context.save()
     }
     public func checkLimit () {
         do{
@@ -233,10 +170,6 @@ class MediaCacheDBStorage {
                 if let expiredMedias = Media.fetchMultiple(beforeDate: date, context: context) {
                     for media in expiredMedias
                     {
-                        //                        let url = self.cacheDirectory.appendingPathComponent(media.key, isDirectory: true)
-                        //                        size = try fileManager.allocatedSizeOfDirectory(at: url)
-                        //                        totalSize = totalSize + size
-                        //                        print ("size of \(media.key) directory is \(size.formattedWithSeparator)")
                         print ("deleting \(media.key) -- \(String(describing: media.createdOn)) - resulting size \(size)")
                         self.delete(media: media)
                         size = try fileManager.allocatedSizeOfDirectory(at: cacheDirectory)
@@ -247,7 +180,6 @@ class MediaCacheDBStorage {
                     }
                     
                 }
-                //print ("******** calculated total size from media \(totalSize.formattedWithSeparator)")
             }
         }
         catch {}
@@ -259,40 +191,21 @@ class MediaCacheDBStorage {
                 print ("Deleting media \(media.key)")
                 self.delete(media: media)
             }
-            
         }
     }
     
-    //    public func test(){
-    //        let mediaBox = store.box(for: MediaDA.self)
-    //        let fragmentBox = store.box(for: MediaFragmentDA.self)
-    //        let media = MediaDA(key: "12345")
-    //        do{
-    //            let id = try mediaBox.put(media)
-    //            print ("put \(media) id is \(id)")
-    //        }
-    //        catch{
-    //
-    //        }
-    //
-    //
-    //        try? mediaBox.all().forEach{media in
-    //            print (media.key)
-    //            media.fragments.forEach{
-    //                print ($0.key)
-    //            }
-    //
-    //        }
-    //
-    //        let query: Query<MediaDA>? = try? mediaBox.query {
-    //            MediaDA.key == "12345"
-    //        }.build()
-    //        if let media = try? query?.find().first {
-    //            let fragment = MediaFragmentDA(key: "xxxxx", offset: 0, length: 10)
-    //            fragment.media.target = media
-    //            try? fragmentBox.put(fragment)
-    //        }
-    //
-    //    }
+    public func clearCache (){
+        if let allMedias = Media.fetchAll(context: context) {
+            if allMedias.count == 0 {
+                print("Nothing to clear")
+                return
+            }
+            allMedias.forEach{ media in
+                print ("Deleting media \(media.key)")
+                self.delete(media: media)
+            }
+            
+        }
+    }
     
 }

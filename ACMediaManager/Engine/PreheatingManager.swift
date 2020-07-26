@@ -11,7 +11,7 @@ import Foundation
 public class PreheatingManager {
     
     public static let shared = PreheatingManager()
-//    private let dispatchQueue = DispatchQueue.init(label: "preheating_queue", qos: .background, attributes: .concurrent)
+    private let dispatchQueue = DispatchQueue.init(label: "preheating_queue", qos: .background, attributes: .concurrent)
     
     private init (){
         
@@ -23,8 +23,14 @@ public class PreheatingManager {
             for blob in blobs {
                 let url = blob.url
                 print ("PreheatingManager --- request for \(blob.id)")
-                MediaCacheManager.shared.preheat(url: url, key: blob.id)
+                dispatchQueue.async {
+                    MediaCacheManager.shared.preheat(url: url, key: blob.id)
+                }
             }
 //        }
+    }
+    
+    public func clearCache(){
+        MediaCacheDBStorage.shared!.clearCache()
     }
 }

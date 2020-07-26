@@ -6,7 +6,6 @@ target 'ACMediaManager' do
   use_frameworks!
 
   # Pods for ACMediaManager
-  pod 'Schedule', '~> 2.0'
 end
 
 target 'ACMediaManagerTests' do

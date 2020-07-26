@@ -59,6 +59,21 @@ public class Media: NSManagedObject {
         }
     }
     
+    class func fetchAll(context: NSManagedObjectContext) -> [Media]? {
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "Media")
+        
+        let sort = NSSortDescriptor(key: "createdOn", ascending: true)
+        fetchRequest.sortDescriptors = [sort]
+
+        do {
+            let media = try context.fetch(fetchRequest)
+            return media as? [Media]
+        } catch let error {
+            print(error.localizedDescription)
+            return nil
+        }
+    }
+    
     public func addInfo (info: MediaFragment){
         self.info.append(info)
         self.compacted = false

@@ -92,7 +92,9 @@ class MediaLoader: NSObject{
         
     }
     private func buildTask () {
+        print("Building task for \(key)")
         guard let neededRange = range else{
+            print("Couldn't get range for \(key)")
             return
         }
         if media == nil {
@@ -114,12 +116,13 @@ class MediaLoader: NSObject{
                     urlRequest.setByteRangeHeader(for: neededRange)
                     let t = self.urlSession.dataTask(with: urlRequest)
                     self.task = t
+                }else{
+                    print("Already fully preheated \(key)")
                 }
             }
         }
     }
     func startTask () {
-        
         guard let neededRange = range else{
             return
         }
@@ -131,8 +134,11 @@ class MediaLoader: NSObject{
                 if let availableRange = cacheResponse.availableRange,
                     self.type != .Preheater /*Ignore retrieving data when we are preheating. We don't need the data*/{
                     
+                    print("Fetcing needed assemblies for \(key)")
                     if let assemblies = m.neededAssembly(range: availableRange){
+                        print("Found \(assemblies.count) assemblies")
                         self.readDataBuffer = Data()
+                        print("Reading assemblies data for \(key)")
                         assemblies.forEach{ assemblyInfo in
                             if let d = m.data(assembly: assemblyInfo) {
                                 self.readDataBuffer?.append(d)
@@ -160,6 +166,7 @@ class MediaLoader: NSObject{
         
     }
     func stop () {
+        print("Stopping loader for \(key)")
         if let writeBuffer = self.writeDataBuffer, writeBuffer.data.count > 0{
             self.flushBuffer()
         }
@@ -171,9 +178,9 @@ class MediaLoader: NSObject{
         lifecycleDelegate.didStop(mediaLoader: self)
     }
     func flushBuffer () {
-        print ("key \(key) -- flushing data buffer")
+        print ("Flushing data buffer for \(key)")
         if let writeBuffer = self.writeDataBuffer, writeBuffer.data.count > 0{
-            print ("key \(key) -- flushing \(writeBuffer.data.count)")
+            print ("Data to flush \(writeBuffer.data.count)")
             
             MediaCacheDBStorage.shared?.addFragment(mediaKey: key, offset: writeBuffer.offset, data: writeBuffer.data)
         }

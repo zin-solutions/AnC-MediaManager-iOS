@@ -1,24 +1,16 @@
 PODS:
-  - ACMediaManager (0.0.1):
-    - Schedule (~> 2.0)
-  - Schedule (2.1.0)
+  - ACMediaManager (0.0.1)
 
 DEPENDENCIES:
   - ACMediaManager (from `.`)
-  - Schedule (~> 2.0)
-
-SPEC REPOS:
-  https://github.com/cocoapods/specs.git:
-    - Schedule
 
 EXTERNAL SOURCES:
   ACMediaManager:
     :path: "."
 
 SPEC CHECKSUMS:
-  ACMediaManager: 526aca56fd23330a33904d62d4387acf81e01e31
-  Schedule: 00e6d7bbdbdb000fd1f51a7d10e9f88a8c451fda
+  ACMediaManager: c03d6bee7d24285787c9170b8cc268c11f582bce
 
-PODFILE CHECKSUM: dbda471c4775eb5caaf72cbb458755ef599dba94
+PODFILE CHECKSUM: 0f5dbf4ee4ddf4e888273c9cdf471c714c483c7d
 
 COCOAPODS: 1.7.5

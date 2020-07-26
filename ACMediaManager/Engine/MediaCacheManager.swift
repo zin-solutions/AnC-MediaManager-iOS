@@ -61,9 +61,9 @@ public class MediaCacheManager: NSObject, MediaLoaderLifecycleDelegate {
     
     var urlSession: URLSession?
     
-//    private let backgroundQueue = DispatchQueue.init(label: "BGMediaCahcheManager", qos: .background, attributes: .concurrent)
-//    private let defaultQueue = DispatchQueue.init(label: "DMediaCacheManager", qos: .default, attributes: .concurrent)
-//    let serialQueue = DispatchQueue(label: "queuename")
+    //    private let backgroundQueue = DispatchQueue.init(label: "BGMediaCahcheManager", qos: .background, attributes: .concurrent)
+    //    private let defaultQueue = DispatchQueue.init(label: "DMediaCacheManager", qos: .default, attributes: .concurrent)
+    //    let serialQueue = DispatchQueue(label: "queuename")
     
     public static let shared = MediaCacheManager(maxOperations: 2)
     //    public static let downloader = MediaCacheManager(maxOperations: 1)
@@ -133,26 +133,26 @@ extension MediaCacheManager: URLSessionDelegate, URLSessionDataDelegate, URLSess
     }
     
     public func stop(key: String){
-//        backgroundQueue.sync {
-            if let loaders = self.loaders.findByMediaKeyAndType(key: key, type: .Player){
-                for loader in loaders {
-                    print ("loader \(key), cancel task \(String(describing: loader.task))")
-                    loader.stop()
-                }
-//            }
-
+        //        backgroundQueue.sync {
+        if let loaders = self.loaders.findByMediaKeyAndType(key: key, type: .Player){
+            for loader in loaders {
+                print ("loader \(key), cancel task \(String(describing: loader.task))")
+                loader.stop()
+            }
+            //            }
+            
         }
     }
     public func stop (key: String, request: AVAssetResourceLoadingRequest){
-//        backgroundQueue.sync {
-            if let loaders = self.loaders.findByMediaKeyAndType(key: key, type: .Player){
-                for loader in loaders {
-                    if let r = loader.request as? AVAssetResourceLoadingRequest, r == request{
-                        loader.stop()
-                    }
+        //        backgroundQueue.sync {
+        if let loaders = self.loaders.findByMediaKeyAndType(key: key, type: .Player){
+            for loader in loaders {
+                if let r = loader.request as? AVAssetResourceLoadingRequest, r == request{
+                    loader.stop()
                 }
-//            }
-
+            }
+            //            }
+            
         }
     }
     func stop(key: String, type: LoaderType){
@@ -165,6 +165,7 @@ extension MediaCacheManager: URLSessionDelegate, URLSessionDataDelegate, URLSess
     }
     
     func request(request: Any, url: URL, key: String, range: ByteRange, delegate: MediaLoaderDelegate, type: LoaderType) -> MediaLoader?{
+        print("Requesting \(key)")
         guard let urlSession = self.urlSession else {
             fatalError()
         }
@@ -173,25 +174,16 @@ extension MediaCacheManager: URLSessionDelegate, URLSessionDataDelegate, URLSess
         
         var loader: MediaLoader?
         
-//        serialQueue.sync {
-            loader = MediaLoader (urlSession: urlSession, request: request, url: url, key: key, range: range, media: object, delegate: delegate, lifecycleDelegate: self, type: type)
-            if let preheatLoaders = self.loaders.findByMediaKeyAndType(key: key, type: .Preheater){
-                for loader in preheatLoaders {
-                    loader.task?.cancel()
-                }
+        loader = MediaLoader (urlSession: urlSession, request: request, url: url, key: key, range: range, media: object, delegate: delegate, lifecycleDelegate: self, type: type)
+        if let preheatLoaders = self.loaders.findByMediaKeyAndType(key: key, type: .Preheater){
+            for loader in preheatLoaders {
+                loader.task?.cancel()
             }
-            if let l = loader, let task = l.task {
-                self.loaders.add(task: task, mediaLoader: l)
-            }
-//            else{
-//                return
-//            }
-//        }
-        
-        
-//        self.defaultQueue.sync {
-            loader?.startTask()
-//        }
+        }
+        if let l = loader, let task = l.task {
+            self.loaders.add(task: task, mediaLoader: l)
+        }
+        loader?.startTask()
         
         return loader
         
@@ -199,7 +191,7 @@ extension MediaCacheManager: URLSessionDelegate, URLSessionDataDelegate, URLSess
     func preheat (url: URL, key: String, range: ByteRange? = nil, delegate: MediaLoaderDelegate? = nil) {
         //check if this key is already beign loaded or preheated
         
-        print ("preheating -- \(key)")
+        print ("Preheating \(key)")
         let requestedRange = range ?? MediaCacheManager.firstTwoBytes
         guard let urlSession = self.urlSession else {
             fatalError()
@@ -208,54 +200,52 @@ extension MediaCacheManager: URLSessionDelegate, URLSessionDataDelegate, URLSess
         
         var loader: MediaLoader?
         
-//        serialQueue.sync {
-            if let loaders = self.loaders.findByMediaKey(key: key), loaders.count > 0 {
-                print ("preheating -- \(key) found loader with the same key")
-                self.loaders.printAll()
-                return
-            }
-            loader = MediaLoader (urlSession: urlSession, request: self.request, url: url, key: key, range: requestedRange,
-                                      media: object, delegate: delegate ?? PreheatMediaDelegate(), lifecycleDelegate: self, type: .Preheater)
-            if let l = loader, let task = l.task {
-                self.loaders.add(task: task, mediaLoader: l)
-            }
-            else{
-                return
-            }
-//        }
-        
-        
-//        self.backgroundQueue.sync {
-            
-            loader?.startTask()
-//        }
+        print("Creating loader for \(key)")
+        if let loaders = self.loaders.findByMediaKey(key: key), loaders.count > 0 {
+            print ("A loader already exist for \(key)")
+            self.loaders.printAll()
+            return
+        }
+        loader = MediaLoader (urlSession: urlSession, request: self.request, url: url, key: key, range: requestedRange,
+                              media: object, delegate: delegate ?? PreheatMediaDelegate(), lifecycleDelegate: self, type: .Preheater)
+        print("Loader created for \(key)")
+        if let l = loader, let task = l.task {
+            print("Adding loader to main loaders for \(key)")
+            self.loaders.add(task: task, mediaLoader: l)
+        }
+        else{
+            print("Skipped adding loader for \(key)")
+            return
+        }
+        print("Starting loader for \(key)")
+        loader?.startTask()
     }
-//    public func export (with url: URL, key: String, range: ByteRange?, exportHandler: @escaping ExportCompletion, delegate: MediaLoaderDelegate? = nil) {
-//        print ("exporting key \(key)")
-//
-//        guard let urlSession = self.urlSession else {
-//            fatalError()
-//        }
-//        let requestedRange = range ?? MediaCacheManager.firstTwoBytes
-//        let object = self.findMedia(key: key)
-//        
-//        var loader: MediaLoader?
-//        
-//        serialQueue.sync {
-//            loader = MediaLoader (urlSession: urlSession, request: request, url: url, key: key, range: requestedRange, media: object, delegate: delegate ?? ExportMediaDelegate(exportHandler: exportHandler), lifecycleDelegate: self, type: .Downloader)
-//            if let l = loader, let task = l.task {
-//                self.loaders.add(task: task, mediaLoader: l)
-//            }
-//            else{
-//                return
-//            }
-//        }
-//        
-//        
-//        self.backgroundQueue.async {
-//            loader?.startTask()
-//        }
-//    }
+    //    public func export (with url: URL, key: String, range: ByteRange?, exportHandler: @escaping ExportCompletion, delegate: MediaLoaderDelegate? = nil) {
+    //        print ("exporting key \(key)")
+    //
+    //        guard let urlSession = self.urlSession else {
+    //            fatalError()
+    //        }
+    //        let requestedRange = range ?? MediaCacheManager.firstTwoBytes
+    //        let object = self.findMedia(key: key)
+    //
+    //        var loader: MediaLoader?
+    //
+    //        serialQueue.sync {
+    //            loader = MediaLoader (urlSession: urlSession, request: request, url: url, key: key, range: requestedRange, media: object, delegate: delegate ?? ExportMediaDelegate(exportHandler: exportHandler), lifecycleDelegate: self, type: .Downloader)
+    //            if let l = loader, let task = l.task {
+    //                self.loaders.add(task: task, mediaLoader: l)
+    //            }
+    //            else{
+    //                return
+    //            }
+    //        }
+    //
+    //
+    //        self.backgroundQueue.async {
+    //            loader?.startTask()
+    //        }
+    //    }
 }
 
 class PreheatMediaDelegate: MediaLoaderDelegate {
@@ -298,7 +288,7 @@ class PreheatMediaDelegate: MediaLoaderDelegate {
     }
     
     func didReceive(mediaLoader: MediaLoader, data: Data) {
-        print ("prehating key \(mediaLoader.key) -- received \(data.count) bytes")
+        print ("preheating key \(mediaLoader.key) -- received \(data.count) bytes")
     }
     
     func onContentInformation(mediaLoader: MediaLoader, contentLength: Int64?, contentType: String?) {
